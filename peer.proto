@@ -16,7 +16,9 @@ service Peer {
     // TODO 2: 在手动模式下, 需要人类用户阅读SessionConfig, 确认无误后继续流程.
     //// 如何向前端传递SessionConfig?
 
-    rpc GetSessionConfig(sess.SessionId) returns (sess.SessionConfig);
+    // 被Orchard调用
+    // 函数内部会核对key_path和token是否匹配.
+    rpc CheckSessionConfig(sess.SessionConfig) returns (sess.Void);
 
     rpc ContinueSession(sess.SessionConfig) returns (sess.Void);
 

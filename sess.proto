@@ -58,6 +58,7 @@ message SessionConfig {
     int64 expire_before_finish = 6; // 0 means unset
     int64 expire_after_finish = 7; // 0 means unset
 
+    string key_path = 14;
     string token = 15; // hash(pk+ts)
     string derive_path = 16; // "" means unset
     TxArray txs = 17; // [] means unset
