@@ -1,0 +1,42 @@
+syntax = "proto3";
+option go_package = "proto/gen";
+package orch;
+import "sess.proto";
+
+// The "Orchard" is the business-level "orchestrator" of an MPC-session.
+// It also means "fruit garden" in English, and is a valid surname.
+service Orchard {
+    // TODO: 有风控吗?
+
+    rpc StartKeygenSession(KeygenSessionConfig) returns (sess.SessionConfig);
+    // rpc StartKeygenMnemSession(KeygenSessionConfig) returns (sess.SessionConfig);
+
+    rpc StartSignSession(SignSessionConfig) returns (sess.SessionConfig);
+
+    rpc StartReshareSession(ReshareSessionConfig) returns (sess.SessionConfig);
+}
+
+message KeygenSessionConfig {
+    string key_name = 1;
+    uint64 key_quorum = 2;
+    repeated sess.Group groups = 3;
+}
+
+message SignSessionConfig {
+    string key_name = 1;
+    repeated sess.Member members = 2;
+
+    string derive_path = 16; // "" means unset
+    sess.TxArray txs = 17; // [] means unset
+}
+
+message ReshareSessionConfig {
+    // The part analogous to SignSessionConfig
+    string provider_key_name = 1;
+    repeated sess.Member providers = 2;
+
+    // The part analogous to KeygenSessionConfig
+    string receiver_key_name = 3;
+    uint64 receiver_key_quorum = 4;
+    repeated sess.Group receivers = 5;
+}

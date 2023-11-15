@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+// MPC算法已经被实现成了若干Rust异步函数. 把这些函数包装成FFI调用的难度很大.
+// 因此用gRPC来调用MPC算法函数.
+// option go_package = "proto/gen"; 
+
+package peer;
+import "sess.proto";
+
+// Peer / Participant / Member of an Svarog session
+// Run in "auto" or "manual" mode
+service Peer {
+    // TODO 1: 在自动 (即, 托管) 模式下, 需要利用 "风控" 来校验SessionConfig.
+    //// SessionConfig需要被校验的主要有: 名单, Tx
+    //// 自动模式的Peer如何与风控整合?
+    // TODO 2: 在手动模式下, 需要人类用户阅读SessionConfig, 确认无误后继续流程.
+    //// 如何向前端传递SessionConfig?
+
+    rpc GetSessionConfig(sess.SessionId) returns (sess.SessionConfig);
+
+    rpc ContinueSession(sess.SessionConfig) returns (sess.Void);
+
+    rpc StopSession(sess.Whistle) returns (sess.Void);
+}
+

@@ -1,0 +1,117 @@
+syntax = "proto3";
+option go_package = "proto/gen";
+package sess;
+
+// Svarog: Session Manager
+service Svarog {
+    rpc NewSession(SessionConfig) returns (Void);
+
+    rpc TerminateSession(SessionTermination) returns (Void);
+
+    // receive the SessionConfig whose 
+    // 1) group_id are filled, reflecting the asc order of (is_reshare, group_name).
+    // 2) member_id are sorted, reflecting the asc order of (group_id, member_name).
+    // 3) expire times are filled, if not provided in the request.
+    rpc GetSessionConfig(SessionId) returns (SessionConfig);
+
+    // rpc GetSessionProgress(SessionId) returns (SessionProgress);
+
+    rpc BlowWhistle(Whistle) returns (Void);
+    
+    rpc PostMessage(Message) returns (Void);
+
+    rpc GetMessage(Message) returns (Message);
+}
+
+message Signature {
+    bytes r = 1;
+    bytes s = 2;
+    bool  v = 3;
+}
+
+message Void {}
+
+message Member {
+    string member_name = 1;
+    uint64 member_id = 2; // 0 means unset
+    bool is_attending = 3;
+}
+
+message Group {
+    string group_name = 1;
+    uint64 group_id = 2; // 0 means unset
+    uint64 group_quorum = 3;
+    bool is_reshare = 4;
+    repeated Member members = 5;
+}
+
+message TxArray {
+    repeated bytes tx_raw = 1;
+}
+
+message SessionConfig { 
+    string session_id = 1;
+    string session_type = 2; // one of "keygen", "sign", "reshare"
+    uint64 key_quorum = 3;
+    uint64 reshare_key_quorum = 4;
+    repeated Group groups = 5;
+    int64 expire_before_finish = 6; // 0 means unset
+    int64 expire_after_finish = 7; // 0 means unset
+
+    string token = 15; // hash(pk+ts)
+    string derive_path = 16; // "" means unset
+    TxArray txs = 17; // [] means unset
+}
+
+message SessionId {
+    string session_id = 1;
+}
+
+message Whistle {
+    string session_id = 1;
+    string message = 2;
+}
+
+message Message {
+    string session_id = 1;
+    string purpose = 2; // formerly "round"
+    uint64 member_id_src = 3; // member_id or negated group_id
+    uint64 member_id_dst = 4;
+    bytes body = 5; // if not provided, use first two fields as index.
+}
+
+message SessionResult {
+    oneof value {
+        string root_xpub = 1; // keygen or reshare result
+        Signature signature = 2; // sign result
+    }
+}
+
+message SessionTermination {
+    string session_id = 1;
+    uint64 member_id = 2; // member_id
+    SessionResult result = 3;
+}
+
+// message GroupProgress {
+//     string group_name = 1;
+//     uint64 group_id = 2;
+//     uint64 max_round = 3;
+//     repeated MemberProgress members = 4;
+// }
+
+// message MemberProgress {
+//     string member_name = 1;
+//     uint64 member_id = 2;
+//     uint64 max_round = 3;
+//     bool is_attending = 4;
+//     bool is_terminated = 5;
+// }
+
+// message SessionProgress {
+//     string session_id = 1;
+//     repeated GroupProgress groups = 2;
+//     uint64 max_round = 3;
+//     SessionResult result = 4;
+//     string whistle = 17;
+// }
